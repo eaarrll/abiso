@@ -47,3 +47,24 @@ ADM4_PARQUET = WAREHOUSE / f"adm4_region{REGION}.parquet"
 BARANGAY_HAZARD_PARQUET = WAREHOUSE / "barangay_hazard.parquet"
 
 USER_AGENT = "abiso-relay/0.1 (barangay disaster alert relay; non-commercial)"
+
+# --- Delivery (Phase 4) --------------------------------------------------
+# SQLite for the pilot (single VM, zero ops); warehouse/schema.sql is the
+# Postgres target when scale demands it.
+DB_PATH = Path(os.environ.get("ABISO_DB", str(DATA / "abiso.db")))
+OUTBOX = DATA / "outbox"
+
+# Nothing leaves the machine unless ABISO_LIVE=1 AND the channel has
+# credentials. Default is dry-run: sends are logged + recorded, not made.
+LIVE = os.environ.get("ABISO_LIVE") == "1"
+
+SEMAPHORE_API_KEY = os.environ.get("SEMAPHORE_API_KEY", "")
+SEMAPHORE_URL = os.environ.get("SEMAPHORE_URL", "https://api.semaphore.co/api/v4/messages")
+SMS_SENDER_NAME = os.environ.get("SMS_SENDER_NAME", "ABISO")
+
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+MESSENGER_VERIFY_TOKEN = os.environ.get("MESSENGER_VERIFY_TOKEN", "")
+
+# Resident tier gets SMS only on high severity (cost control; PLAN.md §2).
+# BDRRMC tier always gets SMS.
+RESIDENT_SMS_SEVERITIES = {"Extreme", "Severe"}

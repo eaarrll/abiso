@@ -36,6 +36,16 @@ poll:
 track:
 	$(PY) -m pipeline.ingest.track
 
+# --- Phase 4: deliver -----------------------------------------------------
+# dispatch: send everything fetched-but-undispatched (dry-run unless
+#           ABISO_LIVE=1 and channel credentials are set)
+# serve:    inbound webhook (sms/telegram/messenger replies)
+dispatch:
+	$(PY) -m pipeline.deliver.dispatch --new
+
+serve:
+	.venv/bin/uvicorn pipeline.deliver.webhook:app --host 0.0.0.0 --port 8080
+
 test:
 	$(PY) -m pytest -q
 

@@ -174,7 +174,12 @@ class TemplateBook:
                 "refusing to send incomplete instructions"
             ) from e
 
-        text = re.sub(r"\s+", " ", text).strip()
+        if channel == "sms":
+            text = re.sub(r"\s+", " ", text).strip()
+        else:  # rich channels keep their line structure
+            text = "\n".join(
+                re.sub(r"[ \t]+", " ", ln).strip() for ln in text.splitlines()
+            ).strip()
         if re.search(r"https?://|www\.", text, re.I):
             raise ComposeError("URL in alert text — PH carriers block SMS with links")
 
