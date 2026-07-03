@@ -1,0 +1,16 @@
+# Per-barangay profile, collected during pilot onboarding (PLAN.md §4).
+# There is no national evacuation-center dataset — every evac_center below
+# is a PLACEHOLDER until confirmed in person with the BDRRMC. The compose
+# engine fails closed if a template needs {evac} and none is set.
+#
+# Keys are 10-digit PSGC codes (never names).
+"0702219002":
+  short_name: Brgy Cansaga
+  citymun: Consolacion, Cebu
+  evac_center: Cansaga Barangay Hall   # PLACEHOLDER — confirm at onboarding
+  languages: [ceb, fil]
+"0702252051":
+  short_name: Brgy IV Pob.
+  citymun: Talisay City, Cebu
+  evac_center: null                    # not yet collected
+  languages: [ceb, fil]

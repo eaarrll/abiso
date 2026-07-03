@@ -14,6 +14,7 @@ dependencies = [
     "shapely>=2.0",
     "huggingface_hub>=0.30",
     "openpyxl>=3.1",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -25,4 +26,5 @@ packages = [
     "pipeline.dataprep",
     "pipeline.ingest",
     "pipeline.downscale",
+    "pipeline.compose",
 ]

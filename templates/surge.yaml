@@ -1,0 +1,43 @@
+# Storm surge. Post-Haiyan evidence: the English term is not understood —
+# use daluyong (Filipino, PAGASA/KWF) and dagkong balod (Cebuano), keeping
+# "storm surge" in parentheses for cross-recognition with news coverage.
+# Levels keyed off CAP severity (SSA parameter formats are unverified).
+templates:
+  - id: surge_evac
+    label: Daluyong
+    priority: 50
+    match:
+      event_rx: surge
+      severity: [Severe, Extreme]
+    slots: [bgy, evac]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Storm surge danger. Seawater may flood coastal areas. Move away from the shore to {evac} now. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Panganib ng daluyong (storm surge). Maaaring pasukin ng tubig-dagat ang baybayin. Lumayo sa dalampasigan, pumunta sa {evac}. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Peligro sa dagkong balod (storm surge). Mahimong lunopan sa dagat ang baybayon. Palayo sa baybayon, adto sa {evac}. {ack}"
+
+  - id: surge_watch
+    label: Daluyong-Abiso
+    priority: 49
+    match:
+      event_rx: surge
+    slots: [bgy]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Possible storm surge along the coast. Avoid the shore and be ready to move to higher ground. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Posibleng daluyong (storm surge) sa baybayin. Iwasan ang dalampasigan at maghandang umakyat sa mataas na lugar. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Posible ang dagkong balod (storm surge) sa baybayon. Likayi ang baybayon ug pangandam nga mosaka sa habog nga dapit. {ack}"

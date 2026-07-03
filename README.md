@@ -35,6 +35,18 @@ Fan out a fetched alert to barangays:
 .venv/bin/python -m pipeline.downscale.fanout data/cap/raw/<alert>.xml
 ```
 
+Preview composed messages (Phase 3; `--allow-draft` renders languages that
+are still awaiting human validation):
+
+```sh
+.venv/bin/python -m pipeline.compose.render tests/fixtures/gfa_sample.cap \
+    --psgc 0702219002 --allow-draft
+```
+
+Templates live in `templates/*.yaml` (see `templates/README.md` for the
+translation workflow — Filipino/Cebuano drafts must be human-approved
+before the engine will render them for sending).
+
 Environment knobs (see `pipeline/config.py`): `NOAH_PROVINCES` (default
 `Cebu`), `REGION` (default `07`), `PSGC_XLSX` (path to the PSA quarterly
 publication file, refreshed every quarter).

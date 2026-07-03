@@ -1,0 +1,22 @@
+# CAP msgType=Cancel — the warning is lifted. Highest priority so a
+# Cancel never renders as a fresh warning. Keeps a caution line: water
+# recedes slower than advisories.
+templates:
+  - id: all_clear
+    label: Tapos-Babala
+    priority: 100
+    match:
+      msg_type: Cancel
+    slots: [bgy]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: PAGASA has lifted the earlier warning. Stay careful near rivers and flooded roads. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Itinigil na ng PAGASA ang naunang babala. Mag-ingat pa rin malapit sa ilog at binahang daan. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Gitangtang na sa PAGASA ang miaging pasidaan. Pag-amping gihapon duol sa suba ug gibahaan nga dalan. {ack}"

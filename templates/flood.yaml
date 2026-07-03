@@ -1,0 +1,68 @@
+# General Flood Advisories / rainfall-driven flooding.
+# Rainfall-first is the priority hazard (PLAN.md: Kristine 2024, Tino 2025).
+templates:
+  - id: flood_extreme
+    label: Baha-Extreme
+    priority: 30
+    match:
+      event_rx: flood|rain
+      severity: Extreme
+    slots: [bgy, evac]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Severe flooding expected. If near a river or low area, go to {evac} now. {ack}"
+        rich: |
+          {attrib}
+          {bgy}: PAGASA warns of SEVERE FLOODING in your area.
+          If your home is near a river, creek, or low-lying area, move to {evac} now — do not wait for the water to rise.
+          Bring medicines, documents, and drinking water. Help elderly and children move first.
+          {ack}
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Inaasahan ang malubhang pagbaha. Kung malapit sa ilog o mababang lugar, pumunta na sa {evac}. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Gilauman ang grabeng pagbaha. Kung duol sa suba o ubos nga dapit, adto na sa {evac}. {ack}"
+
+  - id: flood_severe
+    label: Baha-Severe
+    priority: 20
+    match:
+      event_rx: flood|rain
+      severity: Severe
+    slots: [bgy, evac]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Flooding possible in low areas and near rivers. Prepare to evacuate to {evac}. Watch the water level. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Posibleng bumaha sa mabababang lugar at tabing-ilog. Maghandang lumikas papuntang {evac}. Bantayan ang tubig. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Posible ang pagbaha sa ubos nga dapit ug daplin sa suba. Pangandam sa pagbakwit ngadto sa {evac}. Bantayi ang tubig. {ack}"
+
+  # Fallback for Moderate/Minor/unclassified flood advisories.
+  - id: flood_watch
+    label: Baha-Abiso
+    priority: 10
+    match:
+      event_rx: flood|rain
+    slots: [bgy]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Rain may cause flooding. Stay alert and watch nearby creeks and canals. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Maaaring magdulot ng pagbaha ang ulan. Manatiling alerto at bantayan ang sapa at kanal. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Mahimong magbaha tungod sa ulan. Pagbantay ug tan-awa ang sapa ug kanal. {ack}"

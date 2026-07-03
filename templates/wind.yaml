@@ -1,0 +1,112 @@
+# Tropical Cyclone Wind Signals 1-5, keyed off the CAP parameter
+# ("Public Storm Warning Signal Level" or similar — matched loosely on
+# "signal"). wind_general is the fallback when no signal number parses.
+templates:
+  - id: wind_sig5
+    label: Signal-5
+    priority: 45
+    match: { event_rx: cyclone|typhoon|storm, param: { name_rx: signal, value_rx: '\b5\b' } }
+    slots: [bgy, evac]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Signal 5. Catastrophic winds coming. Go to the strongest building or {evac} immediately. Do not go outside. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 5. Napakalakas na hangin. Pumunta agad sa pinakamatibay na gusali o sa {evac}. Huwag lumabas. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 5. Kusog kaayo nga hangin. Adto dayon sa pinakalig-on nga bilding o sa {evac}. Ayaw gawas. {ack}"
+
+  - id: wind_sig4
+    label: Signal-4
+    priority: 44
+    match: { event_rx: cyclone|typhoon|storm, param: { name_rx: signal, value_rx: '\b4\b' } }
+    slots: [bgy, evac]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Signal 4. Very destructive winds. If your house is not sturdy, move to {evac} NOW. Stay indoors. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 4. Lubhang mapaminsalang hangin. Kung hindi matibay ang bahay, lumipat NA sa {evac}. Manatili sa loob. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 4. Makadaot kaayo nga hangin. Kung dili lig-on ang balay, balhin NA sa {evac}. Pabilin sa sulod. {ack}"
+
+  - id: wind_sig3
+    label: Signal-3
+    priority: 43
+    match: { event_rx: cyclone|typhoon|storm, param: { name_rx: signal, value_rx: '\b3\b' } }
+    slots: [bgy, evac]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Signal 3. Dangerous winds expected. If your home is light materials, move to {evac} before winds arrive. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 3. Mapanganib na hangin. Kung yari sa magaan na materyales ang bahay, lumipat sa {evac} bago lumakas ang hangin. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 3. Delikado nga hangin. Kung huyang ang balay, balhin sa {evac} sa dili pa mokusog ang hangin. {ack}"
+
+  - id: wind_sig2
+    label: Signal-2
+    priority: 42
+    match: { event_rx: cyclone|typhoon|storm, param: { name_rx: signal, value_rx: '\b2\b' } }
+    slots: [bgy]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Signal 2. Strong winds expected. Secure your roof and stay indoors during gusts. Avoid the sea. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 2. Malakas na hangin. Siguruhin ang bubong at manatili sa loob kapag humahangin. Iwasan ang dagat. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 2. Kusog nga hangin. Siguroha ang atop ug pabilin sa sulod kung mohuros. Likayi ang dagat. {ack}"
+
+  - id: wind_sig1
+    label: Signal-1
+    priority: 41
+    match: { event_rx: cyclone|typhoon|storm, param: { name_rx: signal, value_rx: '\b1\b' } }
+    slots: [bgy]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Signal 1. Winds expected within 36 hours. Secure loose roofing and objects. Stay updated. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 1. May hangin sa loob ng 36 oras. Siguruhin ang bubong at kalat na gamit. Makinig sa balita. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: Signal 1. May hangin sulod sa 36 ka oras. Siguroha ang atop ug mga butang sa gawas. Paminaw sa balita. {ack}"
+
+  # Cyclone bulletin without a parseable signal number.
+  - id: wind_general
+    label: Bagyo
+    priority: 5
+    match: { event_rx: 'cyclone|typhoon|storm(?!\s*surge)' }
+    slots: [bgy]
+    text:
+      en:
+        status: approved
+        sms: "{attrib}: {bgy}: Tropical cyclone warning in effect. Follow instructions from your barangay officials. {ack}"
+      fil:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: May babala ng bagyo. Sundin ang mga tagubilin ng inyong barangay. {ack}"
+      ceb:
+        status: needs_review
+        reviewed_by: null
+        sms: "{attrib}: {bgy}: May pasidaan sa bagyo. Sunda ang mga instruksiyon sa inyong barangay. {ack}"
