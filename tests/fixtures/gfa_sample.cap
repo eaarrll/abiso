@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>PAGASA-GFA-TEST-0001</identifier>
+  <sender>publicalert@pagasa.dost.gov.ph</sender>
+  <sent>2026-07-02T20:00:00+08:00</sent>
+  <status>Actual</status>
+  <msgType>Alert</msgType>
+  <scope>Public</scope>
+  <info>
+    <language>en-US</language>
+    <category>Met</category>
+    <event>General Flood Advisory</event>
+    <urgency>Expected</urgency>
+    <severity>Extreme</severity>
+    <certainty>Likely</certainty>
+    <effective>2026-07-02T20:00:00+08:00</effective>
+    <expires>2026-07-03T08:00:00+08:00</expires>
+    <headline>General Flood Advisory for Central Visayas</headline>
+    <description>Moderate to heavy rains are affecting the province. Flooding is possible in low-lying areas and near river channels.</description>
+    <instruction>Residents in flood-prone areas are advised to take precautionary measures and coordinate with local disaster risk reduction offices.</instruction>
+    <parameter>
+      <valueName>Rainfall Warning Level</valueName>
+      <value>Red</value>
+    </parameter>
+    <area>
+      <areaDesc>Cebu</areaDesc>
+      <polygon>10.20,123.50 10.20,124.10 11.30,124.10 11.30,123.50 10.20,123.50</polygon>
+      <geocode>
+        <valueName>SAME</valueName>
+        <value>072200000</value>
+      </geocode>
+    </area>
+    <area>
+      <areaDesc>Isla Ficticia</areaDesc>
+      <geocode>
+        <valueName>SAME</valueName>
+        <value>999900000</value>
+      </geocode>
+    </area>
+  </info>
+</alert>
