@@ -30,4 +30,5 @@ packages = [
     "pipeline.downscale",
     "pipeline.compose",
     "pipeline.deliver",
+    "pipeline.ack",
 ]

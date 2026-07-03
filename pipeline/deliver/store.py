@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS alert_instance (
     matched_via    TEXT NOT NULL,
     hazard_type    TEXT,
     max_pct_area   REAL,
+    severity       TEXT NOT NULL DEFAULT '',
     created_at     TEXT NOT NULL DEFAULT (datetime('now')),
     UNIQUE (cap_identifier, psgc)
 );
@@ -74,6 +75,13 @@ class Store:
         self.conn = sqlite3.connect(db)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(_DDL)
+        # migration: severity added to alert_instance in Phase 5
+        cols = {r["name"] for r in self.conn.execute("PRAGMA table_info(alert_instance)")}
+        if "severity" not in cols:
+            self.conn.execute(
+                "ALTER TABLE alert_instance ADD COLUMN severity TEXT NOT NULL DEFAULT ''"
+            )
+            self.conn.commit()
 
     # --- subscribers ------------------------------------------------------
 
@@ -117,7 +125,7 @@ class Store:
 
     def get_or_create_instance(
         self, cap_identifier: str, psgc: str, matched_via: str,
-        hazard_type: str | None, max_pct_area: float,
+        hazard_type: str | None, max_pct_area: float, severity: str = "",
     ) -> tuple[int, bool]:
         row = self.conn.execute(
             "SELECT id FROM alert_instance WHERE cap_identifier = ? AND psgc = ?",
@@ -127,8 +135,8 @@ class Store:
             return row["id"], False
         cur = self.conn.execute(
             "INSERT INTO alert_instance (cap_identifier, psgc, matched_via,"
-            " hazard_type, max_pct_area) VALUES (?,?,?,?,?)",
-            (cap_identifier, psgc, matched_via, hazard_type, max_pct_area),
+            " hazard_type, max_pct_area, severity) VALUES (?,?,?,?,?,?)",
+            (cap_identifier, psgc, matched_via, hazard_type, max_pct_area, severity),
         )
         self.conn.commit()
         return cur.lastrowid, True

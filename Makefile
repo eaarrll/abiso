@@ -46,6 +46,15 @@ dispatch:
 serve:
 	.venv/bin/uvicorn pipeline.deliver.webhook:app --host 0.0.0.0 --port 8080
 
+# --- Phase 5: ack loop ------------------------------------------------------
+# ackloop: match replies to alerts, fire due escalations (cron every ~5 min)
+# report:  ack timeline for the most recent alert (or ID=<cap_identifier>)
+ackloop:
+	$(PY) -m pipeline.ack.run
+
+report:
+	$(PY) -m pipeline.ack.report $(or $(ID),--latest)
+
 test:
 	$(PY) -m pytest -q
 

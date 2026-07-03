@@ -65,6 +65,21 @@ API's €100/month fee is not worth it at barangay scale). Every send,
 failure, skip, and reply lands in SQLite (`data/abiso.db`) — the
 `delivery_event` table is the RA 12287 audit timeline.
 
+Ack loop (Phase 5 — the differentiator): BDRRMC contacts reply `OO`/`YES`;
+silence escalates (10 min re-send → 25 min call task → 40 min municipal
+DRRMO SMS), every step recorded:
+
+```sh
+make ackloop            # match replies + fire due escalations (cron ~5 min)
+make report             # ack timeline for the latest alert (or ID=<cap id>)
+```
+
+Production cron:
+
+```cron
+*/5 * * * *  cd /opt/abiso && make poll dispatch ackloop
+```
+
 Environment knobs (see `pipeline/config.py`): `NOAH_PROVINCES` (default
 `Cebu`), `REGION` (default `07`), `PSGC_XLSX` (path to the PSA quarterly
 publication file, refreshed every quarter).

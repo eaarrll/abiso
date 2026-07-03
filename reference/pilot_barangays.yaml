@@ -11,8 +11,10 @@
   citymun: Consolacion, Cebu
   evac_center: Cansaga Barangay Hall   # PLACEHOLDER — confirm at onboarding
   languages: [fil, en]
+  drrmo_msisdn: null                   # municipal DRRMO contact (escalation step 3)
 "0702252051":
   short_name: Brgy IV Pob.
   citymun: Talisay City, Cebu
   evac_center: null                    # not yet collected
   languages: [fil, en]
+  drrmo_msisdn: null

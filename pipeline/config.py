@@ -68,3 +68,22 @@ MESSENGER_VERIFY_TOKEN = os.environ.get("MESSENGER_VERIFY_TOKEN", "")
 # Resident tier gets SMS only on high severity (cost control; PLAN.md §2).
 # BDRRMC tier always gets SMS.
 RESIDENT_SMS_SEVERITIES = {"Extreme", "Severe"}
+
+# --- Ack loop (Phase 5) ---------------------------------------------------
+# Replies counted as acknowledgment, normalized to bare uppercase tokens.
+ACK_WORDS = {"OO", "YES", "OK", "OPO", "SIGE", "NADAWAT", "NATANGGAP", "RECEIVED"}
+# A reply only acks alerts sent within this window.
+ACK_WINDOW_HOURS = 24
+# Escalation ladder on BDRRMC silence, minutes after the first send
+# (PLAN.md §2: resend -> voice-call task/alternate -> municipal DRRMO).
+# At most one step fires per run; run every ~5 min from cron.
+ESCALATION_LADDER = [
+    (10, "resend_sms"),
+    (25, "notify_alternate"),
+    (40, "notify_drrmo"),
+]
+# Instances older than this are no longer escalated (the event has passed;
+# the timeline report is the record).
+ESCALATION_WINDOW_HOURS = 6
+
+REPORTS = DATA / "reports"

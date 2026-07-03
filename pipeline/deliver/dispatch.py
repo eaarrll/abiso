@@ -61,7 +61,8 @@ def dispatch_alert(
         if profile is None:
             continue  # not a subscribed barangay
         instance_id, created = store.get_or_create_instance(
-            alert.identifier, hit.psgc, hit.matched_via, hit.hazard_type, hit.max_pct_area
+            alert.identifier, hit.psgc, hit.matched_via, hit.hazard_type,
+            hit.max_pct_area, severity,
         )
         if not created and store.events_for_instance(instance_id):
             print(f"dispatch: {hit.psgc} already handled for {alert.identifier}, skipping")
@@ -94,7 +95,8 @@ def dispatch_alert(
                 continue
             res = channels.send_sms(sub["msisdn"], rendered.text)
             store.record_event(instance_id, "sms", res.kind, sub["id"],
-                               {**res.detail, "segments": rendered.segments,
+                               {**res.detail, "text": rendered.text,
+                                "segments": rendered.segments,
                                 "language": rendered.language})
             summary["sent" if res.ok else "failed"] += 1
 
