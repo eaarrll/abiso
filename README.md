@@ -9,7 +9,10 @@ Relay only: every message is attributed to PAGASA and timestamped. This service 
 forecasts and never orders evacuation — that authority belongs to the punong barangay and
 the local DRRM council (RA 10121).
 
-**Status:** planning complete (see [PLAN.md](PLAN.md)); Cebu province pilot, 2026 typhoon season.
+**Status:** all software phases complete, dry-run rehearsable end to end;
+Cebu province pilot, 2026 typhoon season. See [PLAN.md](PLAN.md) for the
+plan and research basis, [ARCHITECTURE.md](ARCHITECTURE.md) for how the
+system is built and why.
 
 ## Pipeline
 
