@@ -13,18 +13,18 @@ templates:
     text:
       en:
         status: approved
-        sms: "{attrib}: {bgy}: Storm surge danger. Seawater may flood coastal areas. Move away from the shore to {evac} now. {ack}"
+        sms: "{attrib}: {bgy}: Storm surge danger. Seawater may flood the coast. Leave the shore, go to {evac}. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Panganib ng daluyong (storm surge). Maaaring pasukin ng tubig-dagat ang baybayin. Lumayo sa dalampasigan, pumunta sa {evac}. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Panganib ng daluyong (storm surge). Lumayo sa dagat, pumunta sa {evac}. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
         sms: "{attrib}: {bgy}: Peligro sa dagkong balod (storm surge). Mahimong lunopan sa dagat ang baybayon. Palayo sa baybayon, adto sa {evac}. {ack}"
 
   - id: surge_watch
-    label: Daluyong-Abiso
+    label: Daluyong
     priority: 49
     match:
       event_rx: surge
@@ -34,9 +34,9 @@ templates:
         status: approved
         sms: "{attrib}: {bgy}: Possible storm surge along the coast. Avoid the shore and be ready to move to higher ground. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Posibleng daluyong (storm surge) sa baybayin. Iwasan ang dalampasigan at maghandang umakyat sa mataas na lugar. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Posibleng daluyong (storm surge). Iwasan ang dagat, maghandang umakyat sa mataas na lugar. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null

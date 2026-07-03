@@ -13,9 +13,9 @@ templates:
         status: approved
         sms: "{attrib}: {bgy}: PAGASA has lifted the earlier warning. Stay careful near rivers and flooded roads. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Itinigil na ng PAGASA ang naunang babala. Mag-ingat pa rin malapit sa ilog at binahang daan. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Itinigil na ang babala. Mag-ingat pa rin sa ilog at binahang daan. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null

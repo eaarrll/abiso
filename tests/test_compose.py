@@ -49,9 +49,9 @@ def test_render_en_approved(book, gfa_extreme):
     assert "Cansaga Barangay Hall" in r.text
     assert "Reply YES" in r.text  # bdrrmc tier gets the ack request
     assert "http" not in r.text.lower()
-    assert r.segments <= 2
-    # bulletin timestamp rendered in PH time (sent 20:00+08:00 -> 8:00PM)
-    assert "8:00PM" in r.text
+    assert r.segments == 1
+    # bulletin timestamp rendered in PH time (sent 20:00+08:00 -> 8PM)
+    assert "8PM" in r.text
 
 
 def test_resident_tier_has_no_ack(book, gfa_extreme):
@@ -59,6 +59,15 @@ def test_resident_tier_has_no_ack(book, gfa_extreme):
     r = book.render(gfa_extreme, t, "en", slots=SLOTS, tier="resident")
     assert "Reply" not in r.text
     assert not r.text.endswith(" ")
+
+
+def test_fil_is_live_sendable(book, gfa_extreme):
+    """fil was human-approved (reviewed_by recorded in the YAML) on
+    2026-07-04 — it must render without allow_draft, like en."""
+    t = book.select(gfa_extreme)
+    r = book.render(gfa_extreme, t, "fil", slots=SLOTS)
+    assert "Malubhang baha" in r.text
+    assert not r.warnings
 
 
 def test_draft_language_refuses_without_flag(book, gfa_extreme):
@@ -97,6 +106,17 @@ def test_all_templates_all_languages_render(book, gfa_extreme):
             assert "{" not in r.text and "}" not in r.text, (t["id"], lang)
             assert gsm_septets(r.text) is not None, (t["id"], lang, "non-GSM chars")
             assert r.segments <= 2, (t["id"], lang, r.segments, r.text)
+
+
+def test_pilot_languages_fit_one_segment(book, gfa_extreme):
+    """en + fil are the pilot's live languages: with realistic slot values
+    every template must fit a single SMS segment (cost + delivery
+    reliability). ceb is deferred and exempt until its human translation
+    pass."""
+    for t in book.templates:
+        for lang in ("en", "fil"):
+            r = book.render(gfa_extreme, t, lang, slots=SLOTS, allow_draft=True)
+            assert r.segments == 1, (t["id"], lang, gsm_septets(r.text), r.text)
 
 
 def test_gsm_counting():

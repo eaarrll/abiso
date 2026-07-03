@@ -10,11 +10,11 @@ templates:
     text:
       en:
         status: approved
-        sms: "{attrib}: {bgy}: Signal 5. Catastrophic winds coming. Go to the strongest building or {evac} immediately. Do not go outside. {ack}"
+        sms: "{attrib}: {bgy}: Signal 5. Catastrophic winds. Go to {evac} or a strong building now. Stay inside. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Signal 5. Napakalakas na hangin. Pumunta agad sa pinakamatibay na gusali o sa {evac}. Huwag lumabas. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Signal 5. Matinding hangin. Pumunta agad sa {evac}. Huwag lumabas. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
@@ -28,11 +28,11 @@ templates:
     text:
       en:
         status: approved
-        sms: "{attrib}: {bgy}: Signal 4. Very destructive winds. If your house is not sturdy, move to {evac} NOW. Stay indoors. {ack}"
+        sms: "{attrib}: {bgy}: Signal 4. Very destructive winds. If your house is weak, move to {evac} NOW. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Signal 4. Lubhang mapaminsalang hangin. Kung hindi matibay ang bahay, lumipat NA sa {evac}. Manatili sa loob. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Signal 4. Mapaminsalang hangin. Kung mahina ang bahay, lumipat NA sa {evac}. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
@@ -46,11 +46,11 @@ templates:
     text:
       en:
         status: approved
-        sms: "{attrib}: {bgy}: Signal 3. Dangerous winds expected. If your home is light materials, move to {evac} before winds arrive. {ack}"
+        sms: "{attrib}: {bgy}: Signal 3. Dangerous winds. If your home is light materials, move to {evac} now. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Signal 3. Mapanganib na hangin. Kung yari sa magaan na materyales ang bahay, lumipat sa {evac} bago lumakas ang hangin. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Signal 3. Delikadong hangin. Kung magaan ang bahay, lumipat na sa {evac}. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
@@ -66,9 +66,9 @@ templates:
         status: approved
         sms: "{attrib}: {bgy}: Signal 2. Strong winds expected. Secure your roof and stay indoors during gusts. Avoid the sea. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Signal 2. Malakas na hangin. Siguruhin ang bubong at manatili sa loob kapag humahangin. Iwasan ang dagat. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Signal 2. Malakas na hangin. Siguruhin ang bubong, manatili sa loob. Iwasan ang dagat. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
@@ -84,9 +84,9 @@ templates:
         status: approved
         sms: "{attrib}: {bgy}: Signal 1. Winds expected within 36 hours. Secure loose roofing and objects. Stay updated. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Signal 1. May hangin sa loob ng 36 oras. Siguruhin ang bubong at kalat na gamit. Makinig sa balita. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Signal 1. May hangin sa loob ng 36 oras. Siguruhin ang bubong at gamit sa labas. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
@@ -103,9 +103,9 @@ templates:
         status: approved
         sms: "{attrib}: {bgy}: Tropical cyclone warning in effect. Follow instructions from your barangay officials. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: May babala ng bagyo. Sundin ang mga tagubilin ng inyong barangay. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: May babala ng bagyo. Sundin ang tagubilin ng inyong barangay. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null

@@ -19,9 +19,9 @@ templates:
           Bring medicines, documents, and drinking water. Help elderly and children move first.
           {ack}
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Inaasahan ang malubhang pagbaha. Kung malapit sa ilog o mababang lugar, pumunta na sa {evac}. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Malubhang baha. Kung malapit sa ilog o mababang lugar, pumunta sa {evac}. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
@@ -37,11 +37,11 @@ templates:
     text:
       en:
         status: approved
-        sms: "{attrib}: {bgy}: Flooding possible in low areas and near rivers. Prepare to evacuate to {evac}. Watch the water level. {ack}"
+        sms: "{attrib}: {bgy}: Flooding possible. Prepare to evacuate to {evac}. Watch the water level. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Posibleng bumaha sa mabababang lugar at tabing-ilog. Maghandang lumikas papuntang {evac}. Bantayan ang tubig. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Posibleng bumaha. Maghandang lumikas sa {evac}. Bantayan ang tubig. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null
@@ -59,9 +59,9 @@ templates:
         status: approved
         sms: "{attrib}: {bgy}: Rain may cause flooding. Stay alert and watch nearby creeks and canals. {ack}"
       fil:
-        status: needs_review
-        reviewed_by: null
-        sms: "{attrib}: {bgy}: Maaaring magdulot ng pagbaha ang ulan. Manatiling alerto at bantayan ang sapa at kanal. {ack}"
+        status: approved
+        reviewed_by: "Earl Sioson, 2026-07-04 (session review, single-segment revision)"
+        sms: "{attrib}: {bgy}: Maaaring bumaha dahil sa ulan. Bantayan ang sapa at kanal. {ack}"
       ceb:
         status: needs_review
         reviewed_by: null

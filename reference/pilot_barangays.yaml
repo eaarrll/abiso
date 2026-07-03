@@ -4,13 +4,15 @@
 # engine fails closed if a template needs {evac} and none is set.
 #
 # Keys are 10-digit PSGC codes (never names).
+# Interim language mix: fil + en until the Cebuano templates pass human
+# translation/validation, then switch to [ceb, fil].
 "0702219002":
   short_name: Brgy Cansaga
   citymun: Consolacion, Cebu
   evac_center: Cansaga Barangay Hall   # PLACEHOLDER — confirm at onboarding
-  languages: [ceb, fil]
+  languages: [fil, en]
 "0702252051":
   short_name: Brgy IV Pob.
   citymun: Talisay City, Cebu
   evac_center: null                    # not yet collected
-  languages: [ceb, fil]
+  languages: [fil, en]

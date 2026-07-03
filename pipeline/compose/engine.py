@@ -34,10 +34,11 @@ _MONTHS_FIL = ["Ene", "Peb", "Mar", "Abr", "May", "Hun",
 MONTHS = {"en": _MONTHS_EN, "fil": _MONTHS_FIL, "ceb": _MONTHS_FIL}
 
 # Acknowledgment request, appended for the BDRRMC tier only (ack loop).
+# "Reply" is standard PH texting vocabulary across languages.
 ACK = {
     "en": "Reply YES if received.",
-    "fil": "I-reply ang OO kung natanggap.",
-    "ceb": "I-reply ang OO kung nadawat.",
+    "fil": "Reply OO kung natanggap.",
+    "ceb": "Reply OO kung nadawat.",
 }
 
 # GSM 03.38 basic charset (1 septet) and extension table (2 septets).
@@ -203,4 +204,5 @@ class TemplateBook:
         iso = (alert.infos[0].effective if alert.infos else "") or alert.sent
         dt = datetime.fromisoformat(iso).astimezone(PH_TZ)
         mon = MONTHS.get(language, _MONTHS_EN)[dt.month - 1]
-        return f"{mon}{dt.day} {dt.strftime('%I:%M%p').lstrip('0')}"
+        clock = dt.strftime("%I:%M%p").lstrip("0").replace(":00", "")
+        return f"{mon}{dt.day} {clock}"
