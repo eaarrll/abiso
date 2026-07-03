@@ -19,6 +19,26 @@ susceptibility) → compose (human-translated templates, slot-filled) → delive
 (SMS / Viber / Telegram) → ack loop (reply-YES, escalation, event timeline)
 ```
 
+## Quickstart
+
+```sh
+make setup       # venv + deps
+make dataprep    # psgc -> boundaries -> noah -> hazard (Phase 0 artifacts)
+make poll        # one-shot PAGASA CAP feed poll (cron every 5 min in deploy)
+make track       # snapshot the live typhoon-track GeoJSON
+make test
+```
+
+Fan out a fetched alert to barangays:
+
+```sh
+.venv/bin/python -m pipeline.downscale.fanout data/cap/raw/<alert>.xml
+```
+
+Environment knobs (see `pipeline/config.py`): `NOAH_PROVINCES` (default
+`Cebu`), `REGION` (default `07`), `PSGC_XLSX` (path to the PSA quarterly
+publication file, refreshed every quarter).
+
 ## Data sources
 
 - PAGASA CAP 1.2 Atom feed (CC BY 4.0) — official alerting backbone
