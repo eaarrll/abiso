@@ -1,94 +1,128 @@
-# Abiso — Barangay Alert Relay
+# Abiso: barangay disaster-alert relay
 
-Last-mile disaster alert relay for Philippine barangays. Subscribes a barangay once, then
-relays official PAGASA warnings as barangay-specific, Cebuano/Filipino plain-language
-instructions over SMS, Viber, and Telegram — with acknowledgment tracking on barangay DRRM
-contacts and escalation on silence.
+[![CI](https://github.com/eaarrll/abiso/actions/workflows/ci.yml/badge.svg)](https://github.com/eaarrll/abiso/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Relay only: every message is attributed to PAGASA and timestamped. This service never
-forecasts and never orders evacuation — that authority belongs to the punong barangay and
-the local DRRM council (RA 10121).
+PAGASA issues weather warnings per **province**, in technical language. The legal duty to act on them (opening the evacuation center, moving families out) sits with the **barangay**. Deaths in recent typhoons (Kristine 2024, Kalmaegi/Tino 2025) clustered where a rainfall warning never became a barangay-level instruction, and where nobody could say whether the warning had even been received.
 
-**Status:** all software phases complete, dry-run rehearsable end to end;
-Cebu province pilot, 2026 typhoon season. See [PLAN.md](PLAN.md) for the
-plan and research basis, [ARCHITECTURE.md](ARCHITECTURE.md) for how the
-system is built and why.
+Abiso fills that gap. It reads the official PAGASA warning feed and works out which barangays are actually exposed. It sends each one a plain-language SMS in Filipino or English, waits for the barangay's DRRM contact to reply, and escalates if nobody answers.
 
-## Pipeline
+> **Relay only.** Every message is attributed to PAGASA and timestamped. Abiso never forecasts and never orders an evacuation; that authority belongs to the punong barangay and the local DRRM council (RA 10121).
+
+## What it does that other alert tools don't
+
+| | |
+|---|---|
+| **Barangay-level targeting** | PAGASA's alerts stop at the province. Abiso intersects each alert's polygon with barangay boundaries (OCHA COD-AB) and ranks the barangays by UP NOAH flood, storm-surge and landslide exposure. In the Cebu pilot data that's 1,202 barangays, each with its own hazard profile. |
+| **Fails closed** | Messages come only from human-translated templates. If a detail is missing (for example the barangay's evacuation center), it **refuses to send** and records why, instead of sending half an instruction. There's no machine translation or LLM anywhere in the alert path. |
+| **Closes the loop** | Barangay contacts reply `OO` or `YES`. If they don't, the alert escalates: re-send at 10 minutes, a call task at 25, an SMS to the municipal DRRMO at 40. Every step is written to an append-only audit log, which is the accountability record RA 12287 asks LGUs to keep. |
+| **Safe by default** | Everything runs in dry-run. Nothing reaches a phone unless `ABISO_LIVE=1` *and* that channel has credentials. |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    CAP[PAGASA CAP feed<br/>CC BY 4.0] --> ING[Ingest]
+    GEO[PSGC · COD-AB · NOAH<br/>open geodata] -. dataprep .-> DS
+    ING --> DS[Downscale<br/>province → barangay]
+    DS --> CMP[Compose<br/>approved templates only]
+    CMP --> DLV[Deliver<br/>SMS · Telegram · Viber]
+    DLV --> DB[(SQLite<br/>audit log)]
+    DLV --> BDRRMC[Barangay DRRM<br/>contacts]
+    BDRRMC -- reply OO --> WH[Webhook]
+    WH --> ACK[Ack loop<br/>+ escalation]
+    ACK --> DB
+    ACK -- silence --> DRRMO[Municipal DRRMO]
+```
+
+Each stage is a short-lived process that is safe to re-run (idempotent), driven by a 5-minute loop. There's no queue and no broker: at pilot scale the database is the coordination point, and recovering from a crash just means waiting for the next tick. The design choices and trade-offs are in **[ARCHITECTURE.md](ARCHITECTURE.md)**. The research behind them (channels, language, legal position) is in **[PLAN.md](PLAN.md)**.
+
+## Output from a drill
+
+The SMS sent to a barangay captain for a PAGASA Extreme flood advisory. It's one GSM segment (157 of 160 characters, ₱0.56):
 
 ```
-PAGASA CAP feed → ingest → downscale (province → barangay via PSGC + NOAH hazard
-susceptibility) → compose (human-translated templates, slot-filled) → deliver
-(SMS / Viber / Telegram) → ack loop (reply-YES, escalation, event timeline)
+PAGASA Baha-Extreme Hul2 8PM: Brgy Cansaga: Malubhang baha. Kung malapit sa
+ilog o mababang lugar, pumunta sa Cansaga Barangay Hall. Reply OO kung natanggap.
 ```
 
-## Quickstart
+The acknowledgment timeline produced after the event ([full report](docs/sample-ack-report.md)):
+
+```
+BDRRMC ack rate: 1/1 (100%)
+
+Brgy Cansaga (0702219002)
+- ✅ Kap. Demo Lang (bdrrmc): acked in 14.8 min
+- ⚠️ escalated: resend_sms at 17:27Z
+
+Brgy IV Pob. (0702252051)
+- ❌ failed: missing slot 'evac' for template flood_extreme/fil
+     — refusing to send incomplete instructions
+```
+
+The second barangay hadn't registered an evacuation center yet, so Abiso sent it nothing and recorded exactly why.
+
+## Engineering
+
+- **34 tests, no network needed.** They cover CAP parsing, matching alerts to barangays (including same-name barangays and old vs new PSGC codes), dispatch idempotency, the severity gate, and the escalation order. Every template in every language must fill all its slots, use only GSM-7 characters and fit in one SMS segment, and **CI enforces this**.
+- **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint and tests on Python 3.11 and 3.13, checks the Terraform with `fmt` and `validate`, builds the Docker image, and on `main` publishes it to GHCR. Dependabot covers pip, Actions, Docker and Terraform.
+- **Container** ([`Dockerfile`](Dockerfile), [`compose.yaml`](compose.yaml)): one non-root image runs as both the webhook and the worker, with Caddy in front for automatic HTTPS. SQLite lives on a local volume.
+- **Infrastructure as code** ([`deploy/terraform`](deploy/terraform)): one Azure VM in Southeast Asia that starts the stack on first boot (cloud-init). Only ports 80 and 443 are open to the internet, and SSH is limited to one admin IP range, enforced by a Terraform variable check. The VM's Azure DNS label gives Caddy a hostname for its certificate. Secrets stay out of Terraform state: the VM boots in dry-run and credentials are added over SSH.
+
+## Run it
 
 ```sh
-make setup       # venv + deps
-make dataprep    # psgc -> boundaries -> noah -> hazard (Phase 0 artifacts)
-make poll        # one-shot PAGASA CAP feed poll (cron every 5 min in deploy)
-make track       # snapshot the live typhoon-track GeoJSON
-make test
+make setup       # venv + dependencies
+make test        # 34 tests, no network
 ```
 
-Fan out a fetched alert to barangays:
+Everything else needs the open geodata (it downloads PSGC, COD-AB and NOAH, which takes a few minutes):
 
 ```sh
-.venv/bin/python -m pipeline.downscale.fanout data/cap/raw/<alert>.xml
-```
+make dataprep    # gazetteer, boundaries and hazard layers → warehouse/*.parquet
 
-Preview composed messages (Phase 3; `--allow-draft` renders languages that
-are still awaiting human validation):
-
-```sh
+# Preview the messages a sample alert produces (--allow-draft also renders Cebuano)
 .venv/bin/python -m pipeline.compose.render tests/fixtures/gfa_sample.cap \
     --psgc 0702219002 --allow-draft
+
+make poll        # fetch the live PAGASA CAP feed once
+make dispatch    # downscale, compose and "send" (dry-run)
+make ackloop     # match replies, fire due escalations
+make report      # acknowledgment timeline for the latest alert
 ```
 
-Templates live in `templates/*.yaml` (see `templates/README.md` for the
-translation workflow — Filipino/Cebuano drafts must be human-approved
-before the engine will render them for sending).
-
-Deliver (Phase 4 — **dry-run by default**; nothing is sent unless
-`ABISO_LIVE=1` and channel credentials are set):
+Add a subscriber (consent reference is required, per the Data Privacy Act):
 
 ```sh
 .venv/bin/python -m pipeline.deliver.subscribers add \
     --psgc 0702219002 --tier bdrrmc --name "Kap. Juan Dela Cruz" \
     --msisdn +639171234567 --consent-ref "onboarding form 2026-07-10"
-make dispatch    # send everything fetched-but-undispatched
-make serve       # inbound webhook (sms/telegram/messenger replies)
 ```
 
-Live-send env: `ABISO_LIVE=1`, `SEMAPHORE_API_KEY`, `SMS_SENDER_NAME`
-(registered sender ID), `TELEGRAM_BOT_TOKEN`, `MESSENGER_VERIFY_TOKEN`.
-Viber Communities are posted manually from `data/outbox/viber/` (the bot
-API's €100/month fee is not worth it at barangay scale). Every send,
-failure, skip, and reply lands in SQLite (`data/abiso.db`) — the
-`delivery_event` table is the RA 12287 audit timeline.
-
-Ack loop (Phase 5 — the differentiator): BDRRMC contacts reply `OO`/`YES`;
-silence escalates (10 min re-send → 25 min call task → 40 min municipal
-DRRMO SMS), every step recorded:
+### Deploy
 
 ```sh
-make ackloop            # match replies + fire due escalations (cron ~5 min)
-make report             # ack timeline for the latest alert (or ID=<cap id>)
+cp .env.example .env                             # dry-run until you set ABISO_LIVE=1
+docker compose run --rm worker make dataprep     # one-off
+docker compose up -d                             # webhook + worker + Caddy
 ```
 
-Production cron:
+Or on Azure: `cd deploy/terraform`, copy `terraform.tfvars.example` to `terraform.tfvars`, then `terraform apply`.
 
-```cron
-*/5 * * * *  cd /opt/abiso && make poll dispatch ackloop
-```
+To go live, set `ABISO_LIVE=1` plus `SEMAPHORE_API_KEY` and `SMS_SENDER_NAME` (the sender ID must be registered with the SMS aggregator), and optionally `TELEGRAM_BOT_TOKEN` and `MESSENGER_VERIFY_TOKEN`. Viber Community posts are pasted by an operator from `data/outbox/viber/`, because the Viber bot API costs €100 a month, which isn't worth it at barangay scale.
 
-Environment knobs (see `pipeline/config.py`): `NOAH_PROVINCES` (default
-`Cebu`), `REGION` (default `07`), `PSGC_XLSX` (path to the PSA quarterly
-publication file, refreshed every quarter).
+## Status and known gaps
+
+All software phases are complete and can be rehearsed end to end in dry-run. It has **not been run live**. Before a real pilot:
+
+- **Webhook authentication:** the SMS and Telegram inbound routes don't verify a shared secret or signature yet, so anyone who knows the URL could post a fake acknowledgment. Telegram's `secret_token` and the aggregator's signing need to be added before going live.
+- **Cebuano templates** are drafts (`needs_review`) until a translator and the barangay DRRM councils validate them. Filipino and English are approved.
+- **Operational lead time:** registering the SMS sender ID takes 2 to 4 weeks, and each barangay has to be onboarded (contacts, consent, evacuation centers).
 
 ## Data sources
 
-- PAGASA CAP 1.2 Atom feed (CC BY 4.0) — official alerting backbone
-- UP NOAH hazard maps (ODbL) — flood / storm surge / landslide susceptibility per barangay
-- PSA PSGC (quarterly) + OCHA COD-AB ADM4 — barangay codes and boundaries
+- [PAGASA CAP feed](https://publicalert.pagasa.dost.gov.ph/feeds/): official warnings, CC BY 4.0
+- [UP NOAH hazard maps](https://huggingface.co/datasets/bettergovph/project-noah-hazard-maps) (BetterGov mirror): flood, storm-surge and landslide susceptibility, ODbL
+- [PSA PSGC](https://psgc.gitlab.io/api) and [OCHA COD-AB](https://data.humdata.org/dataset/cod-ab-phl): barangay codes and boundaries
+
+Code is MIT-licensed. The datasets keep their own licenses, and no derived data is committed to this repo.
