@@ -7,3 +7,16 @@ data/cap/
 data/track/
 warehouse/*.parquet
 .DS_Store
+
+# runtime state (SQLite audit DB, Viber outbox, ack reports)
+data/abiso.db*
+data/outbox/
+data/reports/
+.env
+
+# terraform
+deploy/terraform/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
