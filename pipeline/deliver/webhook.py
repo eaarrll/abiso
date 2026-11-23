@@ -1,5 +1,5 @@
-"""Inbound webhook: records replies verbatim; matching them to alert
-instances (the ack loop proper) is Phase 5.
+"""Inbound webhook: authenticates each request, then records the reply
+verbatim; matching replies to alert instances is the ack loop's job.
 
 Routes:
   POST /webhook/sms        aggregator inbound SMS (generic JSON/form)
@@ -8,9 +8,20 @@ Routes:
   POST /webhook/messenger  Messenger inbound (user-initiated only)
   GET  /health
 
+Authentication (fail closed — see config.WEBHOOK_TOKEN):
+  sms        shared token in the X-Abiso-Token header, or ?token= for
+             aggregators that can't set headers (header preferred: query
+             strings end up in access logs)
+  telegram   X-Telegram-Bot-Api-Secret-Token, set via setWebhook secret_token
+  messenger  X-Hub-Signature-256, HMAC-SHA256 of the body with the app secret
+
+A rejected request is never recorded.
+
 run: .venv/bin/uvicorn pipeline.deliver.webhook:app --port 8080
 """
 
+import hashlib
+import hmac
 import json
 
 from fastapi import FastAPI, HTTPException, Request
@@ -30,6 +41,19 @@ def store() -> Store:
     return _store
 
 
+def _same(presented: str | None, expected: str) -> bool:
+    return presented is not None and hmac.compare_digest(presented.encode(), expected.encode())
+
+
+def _require(secret: str, channel: str) -> None:
+    if not secret:
+        raise HTTPException(status_code=503, detail=f"{channel} webhook secret not configured")
+
+
+def _reject(channel: str) -> None:
+    raise HTTPException(status_code=403, detail=f"{channel} webhook authentication failed")
+
+
 @app.get("/health")
 def health() -> dict:
     return {"ok": True, "live": config.LIVE}
@@ -37,6 +61,11 @@ def health() -> dict:
 
 @app.post("/webhook/sms")
 async def inbound_sms(request: Request) -> dict:
+    _require(config.WEBHOOK_TOKEN, "sms")
+    presented = request.headers.get("x-abiso-token") or request.query_params.get("token")
+    if not _same(presented, config.WEBHOOK_TOKEN):
+        _reject("sms")
+
     raw = (await request.body()).decode("utf-8", errors="replace")
     sender, text = None, None
     try:
@@ -53,6 +82,12 @@ async def inbound_sms(request: Request) -> dict:
 
 @app.post("/webhook/telegram")
 async def inbound_telegram(request: Request) -> dict:
+    _require(config.TELEGRAM_WEBHOOK_SECRET, "telegram")
+    if not _same(
+        request.headers.get("x-telegram-bot-api-secret-token"), config.TELEGRAM_WEBHOOK_SECRET
+    ):
+        _reject("telegram")
+
     raw = (await request.body()).decode("utf-8", errors="replace")
     sender, text = None, None
     try:
@@ -71,7 +106,7 @@ def messenger_verify(request: Request) -> PlainTextResponse:
     if (
         qp.get("hub.mode") == "subscribe"
         and config.MESSENGER_VERIFY_TOKEN
-        and qp.get("hub.verify_token") == config.MESSENGER_VERIFY_TOKEN
+        and _same(qp.get("hub.verify_token"), config.MESSENGER_VERIFY_TOKEN)
     ):
         return PlainTextResponse(qp.get("hub.challenge", ""))
     raise HTTPException(status_code=403, detail="verification failed")
@@ -79,7 +114,16 @@ def messenger_verify(request: Request) -> PlainTextResponse:
 
 @app.post("/webhook/messenger")
 async def inbound_messenger(request: Request) -> dict:
-    raw = (await request.body()).decode("utf-8", errors="replace")
+    _require(config.MESSENGER_APP_SECRET, "messenger")
+    body = await request.body()
+    expected = (
+        "sha256="
+        + hmac.new(config.MESSENGER_APP_SECRET.encode(), body, hashlib.sha256).hexdigest()
+    )
+    if not _same(request.headers.get("x-hub-signature-256"), expected):
+        _reject("messenger")
+
+    raw = body.decode("utf-8", errors="replace")
     sender, text = None, None
     try:
         entry = (json.loads(raw).get("entry") or [{}])[0]

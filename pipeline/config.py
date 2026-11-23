@@ -65,6 +65,13 @@ SMS_SENDER_NAME = os.environ.get("SMS_SENDER_NAME", "ABISO")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 MESSENGER_VERIFY_TOKEN = os.environ.get("MESSENGER_VERIFY_TOKEN", "")
 
+# Inbound webhook authentication. A reply of "OO" stops an escalation, so an
+# unauthenticated endpoint would let anyone silence the ladder. Fail closed:
+# a channel whose secret is unset answers 503 and records nothing.
+WEBHOOK_TOKEN = os.environ.get("WEBHOOK_TOKEN", "")  # SMS aggregator callback
+TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")  # setWebhook secret_token
+MESSENGER_APP_SECRET = os.environ.get("MESSENGER_APP_SECRET", "")  # signs X-Hub-Signature-256
+
 # Resident tier gets SMS only on high severity (cost control; PLAN.md §2).
 # BDRRMC tier always gets SMS.
 RESIDENT_SMS_SEVERITIES = {"Extreme", "Severe"}
