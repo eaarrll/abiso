@@ -1,0 +1,20 @@
+#cloud-config
+# Boots the relay in dry-run. Nothing is sent until an operator sets
+# ABISO_LIVE=1 and channel credentials in /opt/abiso/.env.
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - git
+
+runcmd:
+  - systemctl enable --now docker
+  - git clone --depth 1 ${repo_url} /opt/abiso
+  - cp /opt/abiso/.env.example /opt/abiso/.env
+  - sed -i 's/^ABISO_DOMAIN=.*/ABISO_DOMAIN=${domain}/' /opt/abiso/.env
+  - chmod 600 /opt/abiso/.env
+  - cd /opt/abiso && docker compose build
+  # Webhook and TLS first, so they come up even if dataprep is slow or fails.
+  - cd /opt/abiso && docker compose up -d webhook caddy
+  - cd /opt/abiso && docker compose run --rm worker make dataprep
+  - cd /opt/abiso && docker compose up -d worker
