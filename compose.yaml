@@ -1,0 +1,52 @@
+# Single-host deployment: webhook + 5-minute worker + Caddy for HTTPS.
+# SQLite is shared through the `data` volume; both containers run on the
+# same kernel, so SQLite's file locking holds (it would not on a network share).
+#
+#   cp .env.example .env            # dry-run by default
+#   docker compose run --rm worker make dataprep   # one-off, ~minutes
+#   docker compose up -d
+
+x-abiso: &abiso
+  image: ghcr.io/eaarrll/abiso:latest
+  build: .
+  env_file: .env
+  restart: unless-stopped
+  volumes:
+    - data:/app/data
+    - warehouse:/app/warehouse
+
+services:
+  webhook:
+    <<: *abiso
+
+  worker:
+    <<: *abiso
+    # -k: a PAGASA feed outage must not stop the ack loop from escalating
+    # alerts that already went out.
+    command: >
+      sh -c 'while true; do
+        make -k poll dispatch ackloop || echo "cycle finished with errors";
+        sleep 300;
+      done'
+    healthcheck:
+      disable: true
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - webhook
+
+volumes:
+  data:
+  warehouse:
+  caddy_data:
+  caddy_config:

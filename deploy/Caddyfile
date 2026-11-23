@@ -1,0 +1,5 @@
+# Automatic HTTPS for the inbound webhook (Telegram and Meta require TLS).
+# Set ABISO_DOMAIN in .env to a DNS name pointing at the VM.
+{$ABISO_DOMAIN:localhost} {
+	reverse_proxy webhook:8080
+}
