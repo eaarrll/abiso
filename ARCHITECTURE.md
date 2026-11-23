@@ -189,9 +189,15 @@ BDRRMC tier.
   barangay.
 - `subscribers.py` — admin CLI. `add` refuses without `--consent-ref`:
   Data Privacy Act opt-in documentation is structurally mandatory.
-- `webhook.py` — FastAPI. Records inbound SMS/Telegram/Messenger replies
-  verbatim into `inbound_message`; interpretation belongs to the ack
-  loop, keeping the webhook dumb and the logic testable offline.
+- `webhook.py` — FastAPI. Authenticates every inbound request, then
+  records the reply verbatim into `inbound_message`; interpretation
+  belongs to the ack loop, keeping the webhook dumb and the logic testable
+  offline. An `OO` stops an escalation, so authentication fails closed:
+  SMS needs the shared `WEBHOOK_TOKEN` (`X-Abiso-Token` header, or
+  `?token=` for aggregators that can't set headers), Telegram the
+  `secret_token` registered with `setWebhook`, Messenger a valid
+  `X-Hub-Signature-256` HMAC. A channel without its secret answers 503,
+  and a rejected request is never recorded.
 
 ### 3.6 Ack loop — `pipeline/ack/`
 
@@ -316,18 +322,22 @@ PAGASA raises a red rainfall / Extreme flood advisory covering Cebu at
 
 ## 8. Testing and operations
 
-- **34 pytest tests**, no network required: CAP parsing (fixture mirrors
+- **47 pytest tests**, no network required: CAP parsing (fixture mirrors
   real PAGASA structure), fan-out (namesake barangays, crosswalk vs
   heuristic, unresolved surfacing), compose (template CI — every
   template × language must slot-fill, stay GSM-clean, fit the segment
   budget; draft gate; fail-closed), dispatch (dry-run, idempotency,
   severity gate), ack (word/msisdn normalization, ladder order,
-  one-rung-per-run, needs-human, report content).
+  one-rung-per-run, needs-human, report content), webhook auth (every
+  channel rejects a missing or wrong secret, records nothing on reject,
+  and fails closed when unconfigured).
 - **Ops surface**: `make poll dispatch ackloop` on cron; `make serve`
   for the webhook; `make report` after events; `make psgc` quarterly.
   Non-zero exit from dispatch = unresolved area = look now.
 - **Live-send gate**: `ABISO_LIVE=1` + `SEMAPHORE_API_KEY` +
-  `SMS_SENDER_NAME` (+ `TELEGRAM_BOT_TOKEN`, `MESSENGER_VERIFY_TOKEN`).
+  `SMS_SENDER_NAME` (+ `TELEGRAM_BOT_TOKEN`, `MESSENGER_VERIFY_TOKEN`),
+  and the matching inbound secret per channel: `WEBHOOK_TOKEN`,
+  `TELEGRAM_WEBHOOK_SECRET`, `MESSENGER_APP_SECRET`.
 - Backups: the SQLite file and `data/cap/raw/` are the state; copy them.
 
 ## 9. Extension points

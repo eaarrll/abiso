@@ -16,7 +16,7 @@ Abiso fills that gap. It reads the official PAGASA warning feed and works out wh
 | **Barangay-level targeting** | PAGASA's alerts stop at the province. Abiso intersects each alert's polygon with barangay boundaries (OCHA COD-AB) and ranks the barangays by UP NOAH flood, storm-surge and landslide exposure. In the Cebu pilot data that's 1,202 barangays, each with its own hazard profile. |
 | **Fails closed** | Messages come only from human-translated templates. If a detail is missing (for example the barangay's evacuation center), it **refuses to send** and records why, instead of sending half an instruction. There's no machine translation or LLM anywhere in the alert path. |
 | **Closes the loop** | Barangay contacts reply `OO` or `YES`. If they don't, the alert escalates: re-send at 10 minutes, a call task at 25, an SMS to the municipal DRRMO at 40. Every step is written to an append-only audit log, which is the accountability record RA 12287 asks LGUs to keep. |
-| **Safe by default** | Everything runs in dry-run. Nothing reaches a phone unless `ABISO_LIVE=1` *and* that channel has credentials. |
+| **Safe by default** | Everything runs in dry-run. Nothing reaches a phone unless `ABISO_LIVE=1` *and* that channel has credentials. Because a reply stops an escalation, every inbound webhook checks a shared secret or signature, and a channel with no secret configured accepts nothing. |
 
 ## Architecture
 
@@ -64,8 +64,8 @@ The second barangay hadn't registered an evacuation center yet, so Abiso sent it
 
 ## Engineering
 
-- **34 tests, no network needed.** They cover CAP parsing, matching alerts to barangays (including same-name barangays and old vs new PSGC codes), dispatch idempotency, the severity gate, and the escalation order. Every template in every language must fill all its slots, use only GSM-7 characters and fit in one SMS segment, and **CI enforces this**.
-- **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint and tests on Python 3.11 and 3.13, checks the Terraform with `fmt` and `validate`, builds the Docker image, and on `main` publishes it to GHCR. Dependabot covers pip, Actions, Docker and Terraform.
+- **47 tests, no network needed.** They cover CAP parsing, matching alerts to barangays (including same-name barangays and old vs new PSGC codes), dispatch idempotency, the severity gate, the escalation order, and webhook authentication (a forged or unsigned reply is rejected and never recorded). Every template in every language must fill all its slots, use only GSM-7 characters and fit in one SMS segment, and **CI enforces this**.
+- **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint and tests on Python 3.11, 3.13 and 3.15 (the image's runtime), checks the Terraform with `fmt` and `validate`, builds the Docker image, and on `main` publishes it to GHCR. Dependabot covers pip, Actions, Docker and Terraform.
 - **Container** ([`Dockerfile`](Dockerfile), [`compose.yaml`](compose.yaml)): one non-root image runs as both the webhook and the worker, with Caddy in front for automatic HTTPS. SQLite lives on a local volume.
 - **Infrastructure as code** ([`deploy/terraform`](deploy/terraform)): one Azure VM in Southeast Asia that starts the stack on first boot (cloud-init). Only ports 80 and 443 are open to the internet, and SSH is limited to one admin IP range, enforced by a Terraform variable check. The VM's Azure DNS label gives Caddy a hostname for its certificate. Secrets stay out of Terraform state: the VM boots in dry-run and credentials are added over SSH.
 
@@ -73,7 +73,7 @@ The second barangay hadn't registered an evacuation center yet, so Abiso sent it
 
 ```sh
 make setup       # venv + dependencies
-make test        # 34 tests, no network
+make test        # 47 tests, no network
 ```
 
 Everything else needs the open geodata (it downloads PSGC, COD-AB and NOAH, which takes a few minutes):
@@ -109,13 +109,20 @@ docker compose up -d                             # webhook + worker + Caddy
 
 Or on Azure: `cd deploy/terraform`, copy `terraform.tfvars.example` to `terraform.tfvars`, then `terraform apply`.
 
-To go live, set `ABISO_LIVE=1` plus `SEMAPHORE_API_KEY` and `SMS_SENDER_NAME` (the sender ID must be registered with the SMS aggregator), and optionally `TELEGRAM_BOT_TOKEN` and `MESSENGER_VERIFY_TOKEN`. Viber Community posts are pasted by an operator from `data/outbox/viber/`, because the Viber bot API costs €100 a month, which isn't worth it at barangay scale.
+To go live, set `ABISO_LIVE=1` plus `SEMAPHORE_API_KEY` and `SMS_SENDER_NAME` (the sender ID must be registered with the SMS aggregator), and optionally `TELEGRAM_BOT_TOKEN` and `MESSENGER_VERIFY_TOKEN`.
+
+Each inbound channel also needs its secret (generate one with `openssl rand -hex 32`):
+
+| Channel | Variable | Where it goes |
+|---|---|---|
+| SMS replies | `WEBHOOK_TOKEN` | the aggregator's callback, as an `X-Abiso-Token` header, or `https://<host>/webhook/sms?token=…` if it can't set headers |
+| Telegram | `TELEGRAM_WEBHOOK_SECRET` | `curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" -d url=https://<host>/webhook/telegram -d secret_token=$TELEGRAM_WEBHOOK_SECRET` |
+| Messenger | `MESSENGER_APP_SECRET` | your Meta app's secret, which signs every delivery | Viber Community posts are pasted by an operator from `data/outbox/viber/`, because the Viber bot API costs €100 a month, which isn't worth it at barangay scale.
 
 ## Status and known gaps
 
 All software phases are complete and can be rehearsed end to end in dry-run. It has **not been run live**. Before a real pilot:
 
-- **Webhook authentication:** the SMS and Telegram inbound routes don't verify a shared secret or signature yet, so anyone who knows the URL could post a fake acknowledgment. Telegram's `secret_token` and the aggregator's signing need to be added before going live.
 - **Cebuano templates** are drafts (`needs_review`) until a translator and the barangay DRRM councils validate them. Filipino and English are approved.
 - **Operational lead time:** registering the SMS sender ID takes 2 to 4 weeks, and each barangay has to be onboarded (contacts, consent, evacuation centers).
 
