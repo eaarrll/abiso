@@ -14,7 +14,7 @@ paper trail.
 """
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from pipeline import config
 from pipeline.ack.match import parse_ts
@@ -89,7 +89,7 @@ def _fire(store: Store, instance, state, step: str, profiles: dict) -> None:
 def run_escalations(
     store: Store, profiles: dict, now: datetime | None = None
 ) -> list[dict]:
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     cutoff = (now - timedelta(hours=config.ESCALATION_WINDOW_HOURS)).strftime(
         "%Y-%m-%d %H:%M:%S"
     )

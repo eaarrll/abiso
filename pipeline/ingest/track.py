@@ -6,7 +6,7 @@ nothing; each distinct forecast state is kept for the event timeline.
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import requests
 
@@ -25,7 +25,7 @@ def poll() -> None:
         print(f"track: unchanged ({existing[0].name})")
         return
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     dest = config.TRACK_DIR / f"{stamp}_{digest}.geojson"
     dest.write_bytes(r.content)
 

@@ -9,7 +9,7 @@ usage:
 """
 
 import argparse
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pipeline.deliver.store import Store
 
@@ -44,7 +44,7 @@ def main() -> None:
             args.psgc, args.tier, args.name,
             msisdn=args.msisdn, telegram_id=args.telegram_id,
             language=args.language,
-            consent_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            consent_at=datetime.now(UTC).isoformat(timespec="seconds"),
             consent_ref=args.consent_ref,
         )
         print(f"added subscriber #{sid}")

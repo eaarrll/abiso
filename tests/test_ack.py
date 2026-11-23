@@ -1,13 +1,11 @@
 import json
-from datetime import datetime, timedelta, timezone
-
-import pytest
+from datetime import UTC, datetime, timedelta
 
 from pipeline.ack.escalate import run_escalations
 from pipeline.ack.match import is_ack, match_inbound, norm_msisdn
 from pipeline.deliver.store import Store
 
-BASE = datetime(2026, 7, 4, 0, 0, 0, tzinfo=timezone.utc)
+BASE = datetime(2026, 7, 4, 0, 0, 0, tzinfo=UTC)
 PROFILES = {
     "0702219002": {
         "short_name": "Brgy Cansaga",

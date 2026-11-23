@@ -8,7 +8,6 @@ usage:
 
 import json
 import sys
-from datetime import timezone
 
 from pipeline import config
 from pipeline.ack.match import parse_ts

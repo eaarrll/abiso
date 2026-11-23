@@ -11,7 +11,7 @@ a question) is exactly what a human must read during an event.
 """
 
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from pipeline import config
 from pipeline.deliver.store import Store
@@ -32,7 +32,7 @@ def is_ack(text: str | None) -> bool:
 
 
 def parse_ts(s: str) -> datetime:
-    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S").replace(tzinfo=UTC)
 
 
 def _find_subscriber(store: Store, channel: str, sender: str | None):
@@ -77,7 +77,7 @@ def _open_instance_for(store: Store, subscriber_id: int, now: datetime):
 def match_inbound(store: Store, now: datetime | None = None) -> dict:
     """Process all unmatched inbound messages; returns summary with the
     replies a human must look at."""
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     summary = {"acked": 0, "needs_human": [], "ignored": 0}
 
     rows = store.conn.execute(
